@@ -3,15 +3,24 @@ const app = express();
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
+// const usbserialport = 1430;
+// const baudRate = 57600;
+
 // Create a port
 const port = new SerialPort({
+  // check serial port in arduino ide
   path: "/dev/cu.usbserial-1440",
+  // path: `/dev/cu.usbserial-${usbserialport}`,
+  // baudRate: 9600,
   baudRate: 57600,
+  // baudRate,
 });
 
 // Read port data
 port.on("open", () => {
   console.log("serial port open");
+  console.log("turn headset on and begin");
+  console.log("\r\n");
 });
 
 // // Read data that is available but keep the stream in "paused mode"
@@ -26,19 +35,30 @@ port.on("open", () => {
 
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 // parser.on("data", console.log);
+
 parser.on("data", (data) => {
   const dataArray = data.split(",");
   if (dataArray) {
-    // console.log("dataArray: ", dataArray);
+    const signal_strength = dataArray[0];
     const attention = dataArray[1];
     const meditation = dataArray[2];
+    // if (attention >= 0 && meditation >= 0) {
     if (attention > 0 && meditation > 0) {
+      console.log("signal_strength: ", signal_strength);
       console.log("attention: ", attention);
       console.log("meditation: ", meditation);
-      console.log("");
+      console.log("\r\n");
       if (attention >= 75 && meditation < 50) {
         console.log("HI SCORE!!! \n");
-        console.log("att: ", attention, " med: ", meditation);
+        console.log(
+          "sig: ",
+          signal_strength,
+          "att: ",
+          attention,
+          " med: ",
+          meditation
+        );
+        console.log("\r\n");
       }
       //   else if (attention < 75 && meditation >= 50) {
       //     console.log("LO SCORE!! \n");
